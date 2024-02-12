@@ -3,7 +3,13 @@ import { Route, createBrowserRouter, createRoutesFromElements, RouterProvider } 
 import Home from './pages/Home';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Signup';
-import Header from './components/nav/Header';
+import Header from 'components/Header';
+// @mui material components
+import { ThemeProvider } from "@mui/material/styles";
+import CssBaseline from "@mui/material/CssBaseline";
+import theme from "assets/theme-dark";
+
+// // Material Dashboard 2 React themes
 
 
 
@@ -21,7 +27,10 @@ function App({ routes }) {
 
   return (
     <>
+      <ThemeProvider theme={theme}>
+      <CssBaseline />
       <RouterProvider router={router} />
+    </ThemeProvider >
     </>
   );
 }

@@ -7,18 +7,34 @@
     "dev": "vite --host",
     "build": "vite --host build",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview --host"
+    "preview": "vite preview --host",
+    "install:clean": "rm -rf node_modules/ && rm -rf package-lock.json && npm install && vite --host"
   },
   "dependencies": {
+    "@emotion/cache": "11.10.8",
+    "@emotion/react": "11.10.8",
+    "@emotion/styled": "11.10.8",
+    "@mui/icons-material": "5.11.16",
+    "@mui/material": "5.12.3",
     "antd": "^5.14.0",
     "bootstrap": "^5.3.2",
+    "chart.js": "4.3.0",
+    "chroma-js": "2.4.2",
     "localforage": "^1.10.0",
     "match-sorter": "^6.3.4",
+    "prop-types": "15.8.1",
     "react": "^18.2.0",
     "react-bootstrap": "^2.10.1",
+    "react-chartjs-2": "5.2.0",
     "react-dom": "^18.2.0",
+    "react-github-btn": "1.4.0",
     "react-router-dom": "^6.22.0",
-    "sort-by": "^1.2.0"
+    "react-scripts": "5.0.1",
+    "react-table": "7.8.0",
+    "sort-by": "^1.2.0",
+    "stylis": "4.1.4",
+    "stylis-plugin-rtl": "2.1.1",
+    "yup": "1.1.1"
   },
   "devDependencies": {
     "@types/react": "^18.2.55",
@@ -28,6 +44,7 @@
     "eslint-plugin-react": "^7.33.2",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
-    "vite": "^5.1.0"
+    "vite": "^5.1.0",
+    "vite-jsconfig-paths": "^2.0.1"
   }
 }
