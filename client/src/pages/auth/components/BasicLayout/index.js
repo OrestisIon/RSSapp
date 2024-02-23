@@ -23,20 +23,23 @@ import Grid from "@mui/material/Grid";
 import MDBox from "components/MDBox";
 
 // Material Dashboard 2 React example components
-import DefaultNavbar from "examples/Navbars/DefaultNavbar";
+// import DefaultNavbar from "examples/Navbars/DefaultNavbar";
 import PageLayout from "examples/LayoutContainers/PageLayout";
 
 // Authentication pages components
 import Footer from "pages/auth/components/Footer";
+import DefaultNavbar from "examples/Navbars/DefaultNavbar";
 
 function BasicLayout({ image, children }) {
   return (
     <PageLayout>
       <DefaultNavbar
+        transparent={false}
+        light={false}
         action={{
           type: "external",
-          route: "https://creative-tim.com/product/material-dashboard-react",
-          label: "free download",
+          route: "https://warwick.ac.uk/fac/sci/dcs/",
+          label: "Department of Computer Science Warwick",
           color: "dark",
         }}
       />

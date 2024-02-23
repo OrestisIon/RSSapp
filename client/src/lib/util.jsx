@@ -44,22 +44,8 @@ export function signUpCall(username, email, password, errorHandler) {
 
 
 export function apiCall(s, errorHandler, body = null) {
-    const username = localStorage.getItem('email')
-    const password = localStorage.getItem('password')
-    if (!(username && password)) {
-        errorHandler('Server settings not configured.')
-        return new Promise((x, y) => {
-            return null
-        })
-    } 
-    // Base64 encode the username and password
-    const base64Credentials = btoa(username + ':' + password);
-    const params = {
-        headers: {
-            'Authorization': 'Basic ' + base64Credentials,
-            'Content-Type': 'application/json' // Assuming JSON is expected
-        }
-    };
+    const token = import.meta.env.VITE_REACT_APP_MINIFLUX_API_KEY
+    const params = { headers: { 'X-Auth-Token': token } }
     if (body) {
         params['method'] = 'PUT'
         params['body'] = JSON.stringify(body)

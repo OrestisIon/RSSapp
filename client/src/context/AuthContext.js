@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState } from 'react';
+import  { createContext, useContext, useState, useEffect } from 'react';
+import PropTypes from 'prop-types'; 
 
 const AuthContext = createContext();
 
@@ -9,10 +10,19 @@ export function useAuth() {
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
 
-    const login = (userData) => {
+    // Load user from localStorage on initial load
+    useEffect(() => {
+        const storedUserData = localStorage.getItem('user');
+        if (storedUserData) {
+            setUser(JSON.parse(storedUserData));
+        }
+    }, []);
+
+    const login = async (userData) => {
         // Implement login logic here and update the user state
         //Extract the username and password from userData
         const { username, password } = userData;
+        console.log('Logging in' + username + ' ' + password);
         const err = (s) => console.error(s)
         if (!(username && password)) {
             return new Promise((x, y) => {
@@ -37,6 +47,7 @@ export const AuthProvider = ({ children }) => {
                 if (r.status === 204) {
                     return r
                 }
+                localStorage.setItem('user', JSON.stringify(userData));
                 setUser(userData);
                 return r.json()
             })
@@ -63,18 +74,20 @@ export const AuthProvider = ({ children }) => {
     };
 
     const logout = () => {
+        // Clear user from local storage on logout
+        localStorage.removeItem('user');
         // Implement logout logic here
         setUser(null);
-        //Return a promise that resolves when the user is logged out
-        return new Promise((resolve, reject) => {
-            resolve()
-        })
     };
 
     const value = {
         user,
         login,
         logout,
+    };
+
+    AuthProvider.propTypes = {
+        children: PropTypes.node.isRequired,
     };
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

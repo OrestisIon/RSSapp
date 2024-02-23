@@ -36,8 +36,8 @@ import routes from "routes";
 import { useMaterialUIController, setMiniSidenav, setOpenConfigurator } from "context";
 
 // Images
-import brandWhite from "assets/images/logo-ct.png";
-import brandDark from "assets/images/logo-ct-dark.png";
+import brandWhite from "assets/images/feedgpt.png";
+import brandDark from "assets/images/feedgpt.png";
 
 import { AuthProvider } from 'context/AuthContext'; // Import the AuthProvider
 import ProtectedRoute from 'components/ProtectedRoute'; // Import ProtectedRoute
@@ -57,6 +57,7 @@ export default function App() {
   } = controller;
   const [onMouseEnter, setOnMouseEnter] = useState(false);
   const [rtlCache, setRtlCache] = useState(null);
+  const [isAuth, setisAuth] = useState(false);
   const { pathname } = useLocation();
 
   // Cache for the rtl
@@ -133,6 +134,26 @@ export default function App() {
     return null;
   });
 
+
+  const getRoutesvr = (allRoutes) => allRoutes.map((route) => {
+    if (route.collapse) {
+      return getRoutes(route.collapse); // Recursively handle nested routes if any
+    }
+
+    if (route.route) {
+      // Directly accessible routes without authentication
+        return (
+          <Route
+            key={route.key}
+            path={route.route}
+            element={React.createElement(route.component)}
+          />
+        );
+    }
+
+    return null;
+  });
+
   const configsButton = (
     <MDBox
       display="flex"
@@ -164,20 +185,6 @@ export default function App() {
         <CacheProvider value={rtlCache}>
           <ThemeProvider theme={darkMode ? themeDarkRTL : themeRTL}>
             <CssBaseline />
-            {layout === "dashboard" && (
-              <>
-                <Sidenav
-                  color={sidenavColor}
-                  brand={(transparentSidenav && !darkMode) || whiteSidenav ? brandDark : brandWhite}
-                  brandName="Material Dashboard 2"
-                  routes={filteredRoutes}
-                  onMouseEnter={handleOnMouseEnter}
-                  onMouseLeave={handleOnMouseLeave}
-                />
-                <Configurator />
-                {configsButton}
-              </>
-            )}
             {layout === "vr" && <Configurator />}
             <Routes>
               {getRoutes(routes)}
@@ -194,19 +201,17 @@ export default function App() {
               <Sidenav
                 color={sidenavColor}
                 brand={(transparentSidenav && !darkMode) || whiteSidenav ? brandDark : brandWhite}
-                brandName="Material Dashboard 2"
+                brandName="FeedGPT"
                 routes={filteredRoutes}
                 onMouseEnter={handleOnMouseEnter}
                 onMouseLeave={handleOnMouseLeave}
               />
-              <Configurator />
-              {configsButton}
             </>
           )}
           {layout === "vr" && <Configurator />}
           <Routes>
-            {getRoutes(routes)}
-            <Route path="*" element={<Navigate to="/login" replace />} />
+              {getRoutesvr(routes)}
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </ThemeProvider>
       )}

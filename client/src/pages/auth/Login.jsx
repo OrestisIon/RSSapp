@@ -33,8 +33,9 @@ import BasicLayout from "pages/auth/components/BasicLayout";
 
 // Images
 import bgImage from "assets/images/bg-sign-in-basic.jpeg";
+import logo from "assets/images/feedgpt.png";
 import { useAuth } from 'context/AuthContext'; // Adjust the path as necessary
-
+import MDAlert from "components/MDAlert";
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -81,9 +82,10 @@ const Login = () => {
         setValidationMessages(messages);
 
         if (isValid) {
+            console.log('Logging in...');
             try {
                 // Call the login method. This is where you might call an API.
-                await login({ email, password, rememberMe }); // Adjust based on your login method's signature
+                await login({ username:email, password:password }); // Adjust based on your login method's signature
                 navigate('/dashboard'); // Navigate to the dashboard on successful login
             } catch (err) {
                 // Handle login failure (e.g., invalid credentials)
@@ -93,7 +95,14 @@ const Login = () => {
     };
 
     return (
-        < BasicLayout image = { bgImage } >
+        < BasicLayout image={bgImage} >
+            {/* Image */}
+            <MDBox
+                display="flex"
+                justifyContent="center"
+                mb={6}
+            >
+            </MDBox>
         <Card>
             <MDBox
                 variant="gradient"
@@ -106,15 +115,17 @@ const Login = () => {
                 mb={1}
                 textAlign="center"
             >
-                {/* Your sign-in header and social icons... */}
-            </MDBox>
+                    <MDTypography variant="h4" fontWeight="medium" color="white" mt={1}>
+                        Sign in
+                    </MDTypography>
+                </MDBox>
             <MDBox pt={4} pb={3} px={3}>
                 <MDBox component="form" role="form" onSubmit={handleSubmit}>
                     {/* Display error message at the top of the form */}
-                    {error && (
-                        <MDBox mb={2} textAlign="center">
-                            <MDTypography color="error">{error}</MDTypography>
-                        </MDBox>
+                        {error && (
+                            <MDAlert mb={2} textAlign="center" color="error">
+                                <MDTypography color="white">{error}</MDTypography>
+                        </MDAlert>
                     )}
 
                     <MDBox mb={2}>
