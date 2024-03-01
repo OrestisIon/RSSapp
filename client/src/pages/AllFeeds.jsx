@@ -66,6 +66,7 @@ function AllFeeds() {
     const [updateFeedsTrigger, setUpdateFeedsTrigger] = useState(true)
     const [renderFeedsTrigger, setRenderFeedsTrigger] = useState(true)
     const [updateUnreadTrigger, setUpdateUnreadTrigger] = useState([])
+    
 
     const [, updateState] = React.useState()
     const forceUpdate = React.useCallback(() => updateState({}), [])

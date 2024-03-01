@@ -37,12 +37,15 @@ function ForYou() {
     const navigate = useNavigate();
     // const { pathname } = useLocation();
     const [error, setError] = useState(null);
-    const [feeds, setFeeds] = useState([]);
+  const [feeds, setFeeds] = useState([]);
+  const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(true);
     // const [, updateState] = React.useState();
     // const forceUpdate = useCallback(() => updateState({}), []);
 
     const fetchFeeds = async () => {
       try {
+        setLoading(true);
         const f = await apiCall('feeds', setError);
         const categories = f.map(feed => feed.category).filter((v, i, a) => a.indexOf(v) === i); // Unique categories
 
@@ -74,6 +77,9 @@ function ForYou() {
       } catch (error) {
         console.error('Error fetching feeds:', error);
         setError(error);
+      }
+      finally {
+        setLoading(false);
       }
     };
 
