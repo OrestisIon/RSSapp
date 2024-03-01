@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import {Allotment} from 'allotment'
 import FeedBrowser from './FeedBrowser'
 import ItemBrowser from './ItemBrowser'
@@ -17,7 +17,7 @@ import { useLocation } from "react-router-dom";
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
 
-
+import DashboardLayout from 'examples/LayoutContainers/DashboardLayout';
 
 const ErrorDiv = styled.div`
 	padding: 10px;
@@ -70,7 +70,7 @@ function AllFeeds() {
     const [, updateState] = React.useState()
     const forceUpdate = React.useCallback(() => updateState({}), [])
 
-    const cache = JSON.parse(localStorage.getItem('favicons')) || {}
+    const cache = useMemo(() => JSON.parse(localStorage.getItem('favicons')) || {}, []);
 
     useEffect(() => {
         localStorage.setItem('refresh', 60)
@@ -186,7 +186,7 @@ function AllFeeds() {
         }
 
         if (updateUnreadTrigger.length > 0) {
-            ;[-2, -1, ...updateUnreadTrigger].forEach((u) =>
+            [-2, -1, ...updateUnreadTrigger].forEach((u) =>
                 updateUnread(u, updateUnreadTrigger)
             )
             setUpdateUnreadTrigger([])
@@ -231,44 +231,15 @@ function AllFeeds() {
     const refreshFeedCounts = () => {
         setUpdateUnreadTrigger(feeds.map((x) => x.id))
     }
+    
     const refreshFeeds = async () => {
         await apiCall('feeds/refresh', setError, {})
         setUpdateFeedsTrigger(true)
     }
 
-    // useHotkeys(
-    //     'shift+d',
-    //     () => {
-    //          setTheme(theme === 'light' ? 'dark' : 'light')
-    //     },
-    //     [settingsOpen, theme]
-    // )
-
-    useHotkeys(
-        'r',
-        () => {
-            refreshFeedCounts()
-        },
-        [feeds]
-    )
-    useHotkeys(
-        'shift+r',
-        () => {
-            refreshFeeds()
-        },
-        [feeds]
-    )
-
     return (
         // <div style={{ display: 'flex', justifyContent: 'center', height: '100vh' }}>
-
-        <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            height: '100vh',
-            overflow: 'auto'
-        }}>
+        <DashboardLayout>
             <MDBox
                 sx={({ breakpoints, transitions, functions: { pxToRem } }) => ({
                     p: 20,
@@ -342,7 +313,7 @@ function AllFeeds() {
                 </Allotment>
             }
             </MDBox >
-     </div>
+        </DashboardLayout>
     );
 }
 

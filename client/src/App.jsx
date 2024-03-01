@@ -44,7 +44,7 @@ import ProtectedRoute from 'components/ProtectedRoute'; // Import ProtectedRoute
 
 export default function App() {
   const [controller, dispatch] = useMaterialUIController();
-  const filteredRoutes = routes.filter(route => route.key !== "sign-in" && route.key !== "sign-up");
+  const filteredRoutes = routes.filter(route => route.to_dashboard === true);
   const {
     miniSidenav,
     direction,

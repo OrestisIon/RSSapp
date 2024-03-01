@@ -4,6 +4,7 @@ import styled from 'styled-components'
 import { useHotkeys } from 'react-hotkeys-hook'
 import dayjs from 'dayjs'
 import { linkNewTab } from 'lib/util'
+import PropTypes from 'prop-types';
 
 const keyMap = [
     ['Up', 'Open previous feed'],
@@ -156,21 +157,23 @@ export function SettingsModal(props) {
         resetIconCache('')
     }
 
-    const configDemo = () => {
-        setHost('https://minifluxdemo.duckdns.org:9999')
-        setApikey('demo')
-    }
+
+    SettingsModal.propTypes = {
+        theme: PropTypes.string.isRequired,
+        onSubmit: PropTypes.func.isRequired,
+        onClose: PropTypes.func.isRequired,
+    };
 
     const saveSettings = () => {
-        localStorage.setItem('miniflux_server', host || '')
-        localStorage.setItem('miniflux_api_key', apikey || '')
-        localStorage.setItem('fetch_limit', parseInt(limit) || 100)
-        localStorage.setItem('refresh', parseInt(refresh) || 0)
-        localStorage.setItem('wallabag', wallabag || '')
-        localStorage.setItem('theme', props.theme)
-        props.onSubmit()
-        props.onClose()
-    }
+        localStorage.setItem('miniflux_server', host || '');
+        localStorage.setItem('miniflux_api_key', apikey || '');
+        localStorage.setItem('fetch_limit', parseInt(limit) || 100);
+        localStorage.setItem('refresh', parseInt(refresh) || 0);
+        localStorage.setItem('wallabag', wallabag || '');
+        localStorage.setItem('theme', props.theme);
+        props.onSubmit();
+        props.onClose();
+    };
 
     return (
         <StyledModal isOpen={true} ariaHideApp={false}>
