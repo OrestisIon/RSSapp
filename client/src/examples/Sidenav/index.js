@@ -182,9 +182,8 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
             <CloseFullscreenIcon sx={{ fontWeight: "bold" }}>close</CloseFullscreenIcon>
           </MDTypography>
         </MDBox>
-        <MDBox component={NavLink} to="/dashboard" display="flex" alignItems="center">
-          {brand && <MDBox alignItems="center" sx={{ cursor: "pointer" }} component="img" src={brand} alt="Brand" width="6rem" />}
-  
+        <MDBox component={NavLink} to="/dashboard" alignItems="center" justify-content="center" >
+          <MDBox marginTop="-1rem" justify-content="center" alignItems="center" sx={{ cursor: "pointer" }} component="img" src={brand} alt="Brand" width="9rem"  height="8rem" />
         </MDBox>
       </MDBox>
       <Divider

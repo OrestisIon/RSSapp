@@ -6,22 +6,60 @@ import { apiCall } from 'lib/util';
 import { useLocation, useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import DashboardLayout from 'examples/LayoutContainers/DashboardLayout';
-import { MDBContainer, MDBRow, MDBCol, MDBRipple, MDBBtn } from 'mdb-react-ui-kit';
+import { MDBContainer, MDBRow, MDBCol, MDBRipple } from 'mdb-react-ui-kit';
+import { Typography } from '@mui/material';
+import MDTypography from "components/MDTypography";
+import { Link } from 'react-router-dom'
+import { Grid } from '@mui/material';
+import MDButton from 'components/MDButton';
+import MDBadge from 'components/MDBadge';
+import SimpleBlogCard from "examples/Cards/BlogCards/SimpleBlogCard";
+import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
+import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
+import MDPagination from 'components/MDPagination';
+import MDInput from "components/MDInput";
+import RefreshIcon from '@mui/icons-material/Refresh';
+import SearchIcon from '@mui/icons-material/Search';
+import MDBox from 'components/MDBox';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+
 const ViewFeed = () => {
     const navigate = useNavigate();
     const [error, setError] = useState(null);
     const [entries, setEntries] = useState([]);
-    const [total, setTotal] = useState([]);
+    const [total, setTotal] = useState(0);
     const [refreshing, setRefreshing] = useState(false);
     const [loading, setLoading] = useState(true);
     const { pathname } = useLocation();
-
+    const [offset, setOffset] = useState(0);
+    const [searchValue, setSearchValue] = useState('');
+    const [query, setQuery] = useState('');
+    const [totalQ, setTotalQ] = useState(0);
+    const [showQuery, setShowQuery] = useState(false);
     const location = useLocation();
-    const data = location.state;
+    const [data, setData] = useState(location.state);
+    const [starredEntries, setStarredEntries] = useState([]);
+    const [changeStar, setChangeStar] = useState([]);
+
+    const interval = 30;
+    const addStarred = (entries) => {
+        setStarredEntries(entries.filter(entry => entry.starred === true).map(entry => entry.id));
+    };
+
+    useEffect(() => {
+        // Call the API to update the starred entries
+        changeStar.forEach(async entryId => {
+            //call the API to PUT the entry as starred
+            await apiCall(`entries/${entryId}/bookmark`, setError, { id: entryId });
+        });
+        setChangeStar([]);
+    }, [navigate, offset, showQuery]);
+
     useEffect(() => {
         setLoading(true);
+        setStarredEntries([]);
         //check if the data is type of object feed
-        if (typeof data !== 'object' || !Object.prototype.hasOwnProperty.call(data, 'id') || !Object.prototype.hasOwnProperty.call(data, 'title')) {
+        if (!data || typeof data !== 'object' || !Object.prototype.hasOwnProperty.call(data, 'id') || !Object.prototype.hasOwnProperty.call(data, 'title')) {
             setEntries([]);
             setTotal([]);
             navigate('/ForYou');
@@ -29,92 +67,173 @@ const ViewFeed = () => {
         }
         const fetchEntries = async () => {
             try {
-                const e = await apiCall(`feeds/${data.id}/entries?limit=1&order=published_at&direction=asc`, setError);
-                console.log(e);
-                setTotal(e.total);
-                if(e.total > 0)
-                    setEntries(e.entries);
+                const response = await apiCall(`feeds/${data.id}/entries?limit=${interval}&order=published_at&direction=desc&offset=${offset*interval}`, setError);
+                console.log(response.total);
+                setTotal(response.total);
+                if (response.total > 0) {
+                    setEntries(response.entries);
+                    addStarred(response.entries);
+                }
             } catch (err) {
                 setError(err);
-            }
-            finally {
+            } finally {
                 setLoading(false);
             }
-
         };
 
         fetchEntries();
-    }, [data.id, setError, setEntries]);
+    }, [data, offset, navigate]);
+    
+    const handleQuery = async () => {
+        if (searchValue !== '') {
+            try {
+                const response = await apiCall(`feeds/${data.id}/entries?limit=${interval}&order=published_at&direction=desc&search=${searchValue}`, setError);
+                setTotalQ(response.total);
+                if (response.total > 0) {
+                    setQuery(response.entries);
+                    setShowQuery(true);
+                    return;
+                }
+        
+            } catch (error) {
+                setTotalQ(0);
+                setShowQuery(true);
+                setError(error);
+            }
+        } 
+        setTotalQ(0);
+        setQuery(searchValue);
+        setShowQuery(true);
+    }
 
-    const onRefresh = async () => {
-        setRefreshing(true);
-        try {
-            await fetchNews();
-        } finally {
-            setRefreshing(false);
+    const handleStarClick = (entryId, starred) => {
+        if (starredEntries.includes(entryId)) {
+            if (starred === true) {
+                setChangeStar(changeStar.filter(id => id !== entryId));
+            }
+            else {
+                setChangeStar(prevStarredEntries => [...prevStarredEntries, entryId]);
+            }
+            return;
         }
+        if (starred === false) {
+            setChangeStar(changeStar.filter(id => id !== entryId));
+        }
+        else {
+            setChangeStar(prevStarredEntries => [...prevStarredEntries, entryId]);
+        }    
     };
-
-
+// TODO: Correct the handleRead function to call the API to update the entry as read, unsure about the API endpoint
+    const handleRead = async (entryId) => {
+        const id = entryId;
+        console.log(id);
+        await apiCall("entries/", setError, {
+            entry_ids: [id],
+            status: "read"
+        }).catch((err) => { 
+            console.log(err);
+        }
+        );
+    }
+    
     return (
         <DashboardLayout>
-            {total > 0 ? (
-                <MDBContainer className="py-5">
-                    <MDBRow className="gx-5">
-                        <MDBCol md="6" className="mb-4">
-                            <MDBRipple
-                                className="bg-image hover-overlay ripple shadow-2-strong rounded-5"
-                                rippleTag="div"
-                                rippleColor="light"
-                            >
-                                {/* <img
-                                    src="https://mdbcdn.b-cdn.net/img/new/slides/080.webp"
-                                    className="w-100"
-                                /> */}
-                                <a href="#!">
-                                    <div
-                                        className="mask"
-                                        style={{ backgroundColor: "rgba(251, 251, 251, 0.15)" }}
-                                    ></div>
-                                </a>
-                            </MDBRipple>
-                        </MDBCol>
-                        <MDBCol md="6" className="mb-4">
-                            <span className="badge bg-danger px-2 py-1 shadow-1-strong mb-3">
-                              
-                            </span>
-                            <h4>
-                                <strong>Facilis consequatur eligendi</strong>
-                            </h4>
-                            <p className="text-muted">
-                                Lorem ipsum dolor sit amet consectetur adipisicing elit. Facilis
-                                consequatur eligendi quisquam doloremque vero ex debitis veritatis
-                                placeat unde animi laborum sapiente illo possimus, commodi
-                                dignissimos obcaecati illum maiores corporis.
-                            </p>
-                            <MDBBtn>Read More</MDBBtn>
-                        </MDBCol>
+            <Grid container={true} spacing={1} justifyContent="center"> {/* Add justifyContent="flex-end" */}
+                <MDTypography variant="h3" component="h1" color="info" textGradient gutterBottom>
+                    {data.title}
+                </MDTypography>
+            </Grid>
+            
+            <Grid container={true} spacing={1} justifyContent="flex-start">
+                <Grid item={true} md={0} xs={1}  >
+                        <MDButton circular={true} color="info"disabled={refreshing} iconOnly={true}>
+                            <RefreshIcon />
+                        </MDButton>
+                    </Grid>
+                <Grid item md={12 } xs={1}>
+                        <MDBox component="form" role="form" onSubmit={(e) => {
+                            e.preventDefault();
+                            handleQuery();
+                            // handle the form submission here
+                        }}> 
+                        <MDInput
+                            type="text"
+                            variant="outlined"
+                            label="Search"
+                            value={searchValue}
+                            onChange={(e) => setSearchValue(e.target.value)}
+                        />
+                        <MDButton
+                            circular={true}
+                            type="submit"
+                            color="info"
+                        >
+                            <SearchIcon />
+                        </MDButton>
+                        </MDBox>
+                </Grid>
+                {total > interval && showQuery===false && (
+                <Grid item xs={12} >
+                    <MDPagination variant="gradient">
+                        <MDPagination item onClick={() => offset > 0 && setOffset(offset - 1)}>
+                            <KeyboardArrowLeftIcon />
+                        </MDPagination>
+                        {Array.from({ length: Math.ceil(total / interval) }, (_, index) => (
+                            <MDPagination item key={index + 1} onClick={() => offset !== index && setOffset(index)} active={index === offset}>
+                                {index + 1}
+                            </MDPagination>
+                        ))}
+                        <MDPagination item>
+                            <KeyboardArrowRightIcon onClick={() => offset < Math.ceil(total / interval) - 1 && setOffset(offset + 1)} />
+                        </MDPagination>
+                        </MDPagination>
+                    </Grid>
+                )}
+                </Grid>
+
+            {total > 0 ? ( showQuery===false ? (
+                <Grid container={true} spacing={1} > {/* Add justifyContent="flex-end" */}
+                        {entries.map((entry, index) => (
+                            <Grid item xs={12} md={6} key={index} justifyContent="center">
+
+                                <SimpleBlogCard
+                                    title={entry.title}
+                                    description={entry.content ?entry.content.slice(0, 200) + '...' : ''}
+                                    action={{ type: "external", route: entry.url, color: "info", label: "Read More" }}
+                                    readtime={entry.reading_time}
+                                    starred={entry.starred}
+                                    status={entry.status}
+                                    onStarClick={handleStarClick}
+                                    onRead={handleRead}
+                                    entryId={entry.id} 
+                                />
                             
-
-                    </MDBRow>
-                </MDBContainer>
-
-            // <div>
-            // <h1>{data.title}</h1>
-            // <ul>
-            //     {entries.map((entry, i) => (
-            //         <li key={i}>
-            //             <a href={entry.url} target="_blank" rel="noreferrer">{entry.title}</a>
-            //             <p>{entry.published}</p>
-            //         </li>
-            //     ))}
-            // </ul>
-            // </div> ) 
-            ):(
-                    <h2>Feed {data.title} has no entries</h2>
+                            </Grid>
+                        ))}
+                </Grid>) : (<Grid container={true} spacing={-5} justifyContent="flex-start"  > 
+                    <Grid item={true} spacing={1} justifyContent="flex-start" >
+                        <MDButton
+                        circular={false}
+                        onClick={() => setShowQuery(false)}
+                        color="info"
+                        > <ArrowBackIcon />
+                    </MDButton>
+                    </Grid>
+                    {totalQ>0 ? ( query.map((entry, index) => (
+                        <Grid item xs={1} md={12} key={index} justifyContent="flex-start">
+                            <SimpleBlogCard
+                                title={entry.title}
+                                description={entry.content ? entry.content.slice(0, 200) + '...' : ''}
+                                action={{ type: "internal", route: entry.url, color: "info", label: "Read More" }}
+                                readtime={entry.reading_time}
+                            />
+                        </Grid>
+                    ))) : (<h2>No entries found</h2>)}
+                    
+                </Grid> )
+            ) : (
+                <h2>Feed {data.title} has no entries</h2>
             )}
-                            
-
         </DashboardLayout>
     );
 }

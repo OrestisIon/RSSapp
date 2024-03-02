@@ -89,7 +89,7 @@ SidenavCollapse.defaultProps = {
 
 // Typechecking props for the SidenavCollapse
 SidenavCollapse.propTypes = {
-  icon: PropTypes.node.isRequired,
+  icon: PropTypes.node,
   name: PropTypes.string.isRequired,
   active: PropTypes.bool,
 };
