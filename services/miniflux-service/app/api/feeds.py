@@ -1,8 +1,8 @@
-from app.api import miniflux_manager as mdb
-from app.api.models import Feed, Category, Icon, DiscoveredFeed, Entry
+from api import miniflux_manager as mdb
+from api.models import Feed, Category, Icon, DiscoveredFeed, Entry
 from fastapi import APIRouter, Depends, HTTPException, Request
 from typing import List
-from app.dependencies import get_authenticated_client
+from dependencies import get_authenticated_client
 from miniflux import Client
 
 feeds = APIRouter(dependencies = [Depends(get_authenticated_client)],

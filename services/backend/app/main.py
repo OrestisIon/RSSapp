@@ -13,9 +13,11 @@ from datetime import datetime, timedelta, timezone
 from app.schemas.auth import Token
 from app.utils.auth import create_access_token, authenticate_user
 # logging.basicConfig(stream=sys.stdout, level=logging.DEBUG if settings.debug_logs else logging.INFO)
+import miniflux
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """
@@ -34,6 +36,19 @@ app = FastAPI(lifespan=lifespan, title=settings.project_name, docs_url="/api/doc
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
+
+@app.get("/mini")
+def root():
+    try:
+        client = miniflux.Client("http://miniflux:8080", api_key="xEzgfo_f3_E8kCwW3cPMdX6HIEV59AXIN8xeF8BB83U=")
+    except Exception as e:
+        raise HTTPException("Error:" + e)
+    try:
+        feeds = client.me()
+    except Exception as e:
+        print(e)
+        return
+    return (client)
 
 @app.post("/token")
 async def login_for_access_token(

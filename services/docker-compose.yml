@@ -1,63 +1,62 @@
 version: '3.8'
 
 services:
-  # miniflux-service:
-  #   build: ./miniflux-service
-  #   command: uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+  miniflux-service:
+    build: ./miniflux-service
+    command: uvicorn app.main:app --reload --host 0.0.0.0 --port 8001
+    volumes:
+      - ./miniflux-service/:/app/
+    ports:
+      - 8001:8001
+    env_file:
+      - ./miniflux-service/.env
+    environment:
+
+
+  # recommender-service:
+  #   build: ./recommender-service
+  #   command: bash -c 'while !</dev/tcp/admin_db/5432; do sleep 1; done;uvicorn app.main:app --reload --host 0.0.0.0'
   #   volumes:
-  #     - ./miniflux-service/:/app/
+  #     - ./recommender-service/:/app/:cached
+  #     - ./.docker/.ipython:/root/.ipython:cached
+  #   tty: true
   #   ports:
-  #     - 8001:8000
-  #   env_file:
-  #     - ./miniflux-service/.env
+  #     - 8008:8000
   #   environment:
-  #     - DATABASE_URI=postgresql://movie_db_username:movie_db_password@movie_db/admin_db_dev
-      # - CAST_SERVICE_HOST_URL=http://cast_service:8000/api/v1/casts/
+  #     - DATABASE_URL=postgresql://admin:test123@admin_db:5432/admin_db_dev
+  #     - QDRANT_PORT=6333
+  #     - QDRANT_HOST=<your_qdrant_host>
+  #     - QDRANT_API_KEY="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"
+  #   depends_on:
+  #     - admin_db
 
-  recommender-service:
-    build: ./recommender-service
-    command: bash -c 'while !</dev/tcp/admin_db/5432; do sleep 1; done;uvicorn app.main:app --reload --host 0.0.0.0'
-    volumes:
-      - ./recommender-service/:/app/:cached
-      - ./.docker/.ipython:/root/.ipython:cached
-    tty: true
-    ports:
-      - 8008:8000
-    environment:
-      - DATABASE_URL=postgresql://admin:test123@admin_db:5432/admin_db_dev
-      - QDRANT_PORT=6333
-      - QDRANT_HOST=<your_qdrant_host>
-      - QDRANT_API_KEY="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"
-    depends_on:
-      - admin_db
+  # admin_db:
+  #   image: postgres:15-alpine
+  #   restart: always
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data:cached
+  #   ports:
+  #     - 5432:5432
+  #   expose:
+  #     - "5432"
+  #   environment:
+  #     - POSTGRES_USER=admin
+  #     - POSTGRES_PASSWORD=test123
+  #     - POSTGRES_DB=admin_db_dev
 
-  admin_db:
-    image: postgres:15-alpine
-    restart: always
-    volumes:
-      - postgres_data:/var/lib/postgresql/data:cached
-    ports:
-      - 5432:5432
-    expose:
-      - "5432"
-    environment:
-      - POSTGRES_USER=admin
-      - POSTGRES_PASSWORD=test123
-      - POSTGRES_DB=admin_db_dev
-
-  test-postgres:
-    image: postgres:15-alpine
-    restart: always
-    environment:
-      POSTGRES_USER: test-user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: test_db
-    ports:
-      - 5434:5432 # Use a different port to avoid conflicts with the main database
-    expose:
-      - "5434" # Exposing the different port for clarity
-    volumes:
-      - test-db-data:/var/lib/postgresql/data:cached
+  # test-postgres:
+  #   image: postgres:15-alpine
+  #   restart: always
+  #   environment:
+  #     POSTGRES_USER: test-user
+  #     POSTGRES_PASSWORD: password
+  #     POSTGRES_DB: test_db
+  #   ports:
+  #     - 5434:5432 # Use a different port to avoid conflicts with the main database
+  #   expose:
+  #     - "5434" # Exposing the different port for clarity
+  #   volumes:
+  #     - test-db-data:/var/lib/postgresql/data:cached
 
   # docker-compose exec admin_db psql --username=admin --dbname=admin_db_dev
 
@@ -91,7 +90,7 @@ services:
   #       # - miniflux-service
   #       - recommender-service
 
-volumes:
-  postgres_data:
+# volumes:
+#   postgres_data:
   # postgres_data_movie:
   # postgres_data_cast:

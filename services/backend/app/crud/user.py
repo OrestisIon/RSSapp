@@ -35,16 +35,16 @@ async def create_user(
         is_superuser=user.is_superuser,
     )
     # Perform an action to validate the credentials, e.g., fetching the user's details
-    user_info = client.me()
-    feeds = client.get_feeds()
-    print(user_info)
-    # db_session.add(userm)
-    # await db_session.commit()
-    try:
-        user = client.create_user(username=user.email, password=user.hashed_password, is_admin=False)
-    except miniflux.ClientError as e:
-        # await db_session.rollback()
-        raise HTTPException(status_code=400, detail=f"Error creating user in miniflux. Reason: {e}")
+    # user_info = client.me()
+    # feeds = client.get_feeds()
+    # print(user_info)
+    db_session.add(userm)
+    await db_session.commit()
+    # try:
+    #     user = client.create_user(username=user.email, password=user.hashed_password, is_admin=False)
+    # except miniflux.ClientError as e:
+    #     # await db_session.rollback()
+    #     raise HTTPException(status_code=400, detail=f"Error creating user in miniflux. Reason: {e}")
     # refresh the user to get the id
-    # await db_session.refresh(userm)
+    await db_session.refresh(userm)
     return userm
