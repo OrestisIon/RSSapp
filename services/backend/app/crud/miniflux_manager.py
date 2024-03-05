@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 import os
 from typing import List
 from fastapi.encoders import jsonable_encoder
-from app.api.models import Feed, DiscoveredFeed, Category, Icon, Entry
+from app.models.miniflux import Feed, DiscoveredFeed, Category, Icon, Entry
 from typing import Dict
 import miniflux
 from app.config import settings
@@ -12,7 +12,15 @@ load_dotenv()
 API_KEY = settings.MINIFLUX_API_KEY
 URL = settings.MINIFLUX_URL
 
-
+async def get_icon_by_feed_id(client: miniflux.Client, feed_id: int) -> List[Icon]:
+    try:
+        feeds_data = client.get_icon_by_feed_id(int)  # This returns a list of dictionaries
+        # feeds = [Feed(**feed) for feed in feeds_data]  # Parse each dict into a Feed model instance
+        return feeds_data
+    except Exception as e:
+        print(f"Error fetching feed Icon. Reason: {e}")
+        return []
+    
 async def get_all_feeds(client: miniflux.Client) -> List[Feed]:
     try:
         feeds_data = client.get_feeds()  # This returns a list of dictionaries
@@ -71,9 +79,9 @@ async def refresh_feed(client: miniflux.Client, feed_id: int) -> Feed:
         print(f"Error refreshing feed. Reason: {e}")
         return None
 
-async def get_feed_entries(client: miniflux.Client, feed_id: int) -> List[Entry]:
+async def get_feed_entries(client: miniflux.Client, feed_id: int, **kwargs ) -> List[Entry]:
     try:
-        feed_entries = client.get_feed_entries(feed_id)
+        feed_entries = client.get_feed_entries(feed_id, **kwargs)
         entries = feed_entries.get("entries")
         if entries is None:
             return []
@@ -81,7 +89,15 @@ async def get_feed_entries(client: miniflux.Client, feed_id: int) -> List[Entry]
     except Exception as e:
         print(f"Error fetching feed entries. Reason: {e}")
         return []
-
+    
+async def toggle_bookmark(client: miniflux.Client,  entry_id: int ) -> bool:
+    try:
+        isSuccess = client.toggle_bookmark(entry_id)
+        return isSuccess
+    except Exception as e:
+        print(f"Error bookmarking. Reason: {e}")
+        return []
+    
 async def get_category_feeds(client: miniflux.Client, category_id: int) -> List[Feed]:
     try:
         category_feeds = client.get_category_feeds(category_id)

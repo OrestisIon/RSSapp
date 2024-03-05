@@ -4,7 +4,7 @@ from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from passlib.context import CryptContext
-import miniflux
+
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
