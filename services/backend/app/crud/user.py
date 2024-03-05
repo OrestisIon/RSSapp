@@ -4,7 +4,8 @@ from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from passlib.context import CryptContext
-from miniflux import client
+import miniflux
+
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 async def get_user(db_session: AsyncSession, user_id: int):
@@ -33,9 +34,17 @@ async def create_user(
         hashed_password=pwd_context.hash(user.hashed_password), 
         is_superuser=user.is_superuser,
     )
-    db_session.add(userm)
-    client.create_user(userm)
-    await db_session.commit()
+    # Perform an action to validate the credentials, e.g., fetching the user's details
+    user_info = client.me()
+    feeds = client.get_feeds()
+    print(user_info)
+    # db_session.add(userm)
+    # await db_session.commit()
+    try:
+        user = client.create_user(username=user.email, password=user.hashed_password, is_admin=False)
+    except miniflux.ClientError as e:
+        # await db_session.rollback()
+        raise HTTPException(status_code=400, detail=f"Error creating user in miniflux. Reason: {e}")
     # refresh the user to get the id
-    await db_session.refresh(userm)
+    # await db_session.refresh(userm)
     return userm

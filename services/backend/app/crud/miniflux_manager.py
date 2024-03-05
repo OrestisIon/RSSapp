@@ -6,10 +6,11 @@ from fastapi.encoders import jsonable_encoder
 from app.api.models import Feed, DiscoveredFeed, Category, Icon, Entry
 from typing import Dict
 import miniflux
+from app.config import settings
 
 load_dotenv()
-API_KEY = os.getenv("MINIFLUX_API_KEY")
-URL = os.getenv("MINIFLUX_URL")
+API_KEY = settings.MINIFLUX_API_KEY
+URL = settings.MINIFLUX_URL
 
 
 async def get_all_feeds(client: miniflux.Client) -> List[Feed]:
