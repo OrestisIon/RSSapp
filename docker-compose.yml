@@ -41,7 +41,7 @@ services:
       - postgres
     ports:
       - 8000:8000
-
+# docker pull miniflux/miniflux
   miniflux:
     image: miniflux/miniflux:latest
     healthcheck:
