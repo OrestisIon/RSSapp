@@ -32,4 +32,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db_ses
     return user
 
 
+
+
+
 CurrentUserDep = Annotated[models.User, Depends(get_current_user)]

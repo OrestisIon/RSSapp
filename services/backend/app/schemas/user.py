@@ -16,6 +16,18 @@ class CategoryTitleEnum(str, Enum):
     environment = 'Environment'
     arts_culture = 'Arts & Culture'
 
+
+class UserCreate(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    username: str
+    email: str
+    first_name: str
+    last_name: str
+    hashed_password: str
+    is_superuser: bool = False
+
+    
 class User(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
