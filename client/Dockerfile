@@ -4,6 +4,8 @@ WORKDIR /app
 
 COPY package.json .
 
+RUN npm install vite -g
+
 RUN npm install
 
 COPY . .

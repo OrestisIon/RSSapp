@@ -88,7 +88,7 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
   useEffect(() => {
     // A function that sets the mini state of the sidenav.
     function handleMiniSidenav() {
-      setMiniSidenav(dispatch, window.innerWidth < 1200);
+      setMiniSidenav(dispatch, window.innerWidth < 600);
       setTransparentSidenav(dispatch, window.innerWidth < 1200 ? false : transparentSidenav);
       setWhiteSidenav(dispatch, window.innerWidth < 1200 ? false : whiteSidenav);
     }
@@ -170,13 +170,9 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
     >
       <MDBox pt={3} pb={1} px={4} textAlign="center">
         <MDBox
-          display={{ xs: "block", xl: "none" }}
-          position="absolute"
-          top={0}
-          right={0}
-          p={1.625}
+          p={1}
           onClick={closeSidenav}
-          sx={{ cursor: "pointer" }}
+        sx={{ cursor: "pointer", position: "absolute", top: "0", right: "0"}}
         >
           <MDTypography variant="h6" color="secondary">
             <CloseFullscreenIcon sx={{ fontWeight: "bold" }}>close</CloseFullscreenIcon>

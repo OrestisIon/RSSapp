@@ -7,6 +7,9 @@ from app.models import Base
 from asyncpg import Connection
 from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import async_engine_from_config
+import pgvector.sqlalchemy  
+
+
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -33,6 +36,7 @@ def run_migrations_offline():
     Calls to context.execute() here emit the given string to the
     script output.
     """
+
     # url = config.get_main_option("sqlalchemy.url")
     url = get_url()
     context.configure(

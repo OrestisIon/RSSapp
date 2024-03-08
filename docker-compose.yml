@@ -13,17 +13,17 @@ services:
     volumes:
       - db-data:/var/lib/postgresql/data:cached
 
-  test-postgres:
-    image: postgres:15-alpine
-    restart: always
-    environment:
-      POSTGRES_USER: test-user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: test_db
-    ports:
-      - 5434:5432
-    volumes:
-      - test-db-data:/var/lib/postgresql/data:cached
+  # test-postgres:
+  #   image: postgres:15-alpine
+  #   restart: always
+  #   environment:
+  #     POSTGRES_USER: test-user
+  #     POSTGRES_PASSWORD: password
+  #     POSTGRES_DB: test_db
+  #   ports:
+  #     - 5434:5432
+  #   volumes:
+  #     - test-db-data:/var/lib/postgresql/data:cached
 
   backend:
     build:
@@ -69,21 +69,23 @@ services:
       interval: 10s
       start_period: 30s
 
-  client:
-    build:
-      context: client
-      dockerfile: Dockerfile
-    stdin_open: true
-    volumes:
-      - "./client:/app:cached"
-      - "./client/node_modules:/app/node_modules:cached"
-    environment:
-      - NODE_ENV=development
-    ports:
-      - 3000:3000
+  # client:
+  #   build:
+  #     context: client
+  #     dockerfile: Dockerfile
+  #   stdin_open: true
+  #   volumes:
+  #     - .:/usr/src/app
+  #     - /usr/src/app/node_modules
+  #     - "./client:/app:cached"
+  #     - "./client/node_modules:/app/node_modules:cached"
+  #   environment:
+  #     - NODE_ENV=development
+  #   ports:
+  #     - 3000:3000
 
 volumes:
   db-data:
-  test-db-data:
+  # test-db-data:
   miniflux-db:
 

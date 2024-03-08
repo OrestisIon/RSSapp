@@ -79,7 +79,7 @@ function MaterialUIControllerProvider({ children }) {
     fixedNavbar: false,
     openConfigurator: false,
     direction: "not",
-    layout: "vr",
+    layout: "dashboard",
     darkMode: true,
   };
 

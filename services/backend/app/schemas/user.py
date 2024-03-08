@@ -41,17 +41,6 @@ class User(BaseModel):
 class UserPrivate(User):
     hashed_password: str
 
-class CategoryBase(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    title: str
-
-class CategoryBase(BaseModel):
-    title: CategoryTitleEnum
-
-class Category(CategoryBase):
-    id: Optional[int] = None
- 
 
 class FeedBase(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -63,9 +52,26 @@ class FeedBase(BaseModel):
 
 class Feed(FeedBase):
     id: Optional[int] = None
-    category: Category
+    
+    
+    
+    
+    
+#     category: Category
 
 
 
 
+
+# class CategoryBase(BaseModel):
+#     model_config = ConfigDict(from_attributes=True)
+
+#     title: str
+
+# class CategoryBase(BaseModel):
+#     title: CategoryTitleEnum
+
+# class Category(CategoryBase):
+#     id: Optional[int] = None
+ 
 

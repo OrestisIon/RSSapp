@@ -6,7 +6,8 @@ from passlib.context import CryptContext
 from datetime import datetime, timedelta, timezone
 from app.api.dependencies.core import DBSessionDep
 from app.crud.user import get_user_by_email
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/token")
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 

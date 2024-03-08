@@ -10,3 +10,4 @@ async def validate_is_authenticated(
     This just returns as the CurrentUserDep dependency already throws if there is an issue with the auth token.
     """
     return current_user
+

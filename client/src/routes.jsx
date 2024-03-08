@@ -7,7 +7,7 @@ import AllFeeds from "pages/AllFeeds";
 import EditFeeds from "pages/EditFeeds";
 import FeedIcon from '@mui/icons-material/Feed';
 import EditIcon from '@mui/icons-material/Edit';
-// @mui icons
+import AddLinkIcon from '@mui/icons-material/AddLink';// @mui icons
 import Icon from "@mui/material/Icon";
 import AddIcon from '@mui/icons-material/Add';
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -16,6 +16,8 @@ import ForYou from "pages/ForYou";
 import MySubscriptions from "pages/MySubscriptions";
 import GptApp from "pages/GptApp";
 import ViewFeed from "pages/ViewFeed";
+import AddFeed from "pages/AddFeed";
+import Reccom from "pages/Reccom";
 const routes = [
     {
         type: "title",
@@ -32,7 +34,7 @@ const routes = [
         icon: <DashboardIcon fontSize="small"></DashboardIcon>,
         route: "/dashboard",
         to_dashboard: true,
-        component: Dashboard,
+        component: Reccom,
     },
     {
         type: "collapse",
@@ -119,12 +121,12 @@ const routes = [
     },
     {
         type: "collapse",
-        name: "Edit Feeds",
+        name: "Add Feeds",
         key: "edit-feed",
-        icon: <EditIcon fontSize="small"></EditIcon>,
-        route: "/edit-feeds",
+        icon: <AddLinkIcon fontSize="small"></AddLinkIcon>,
+        route: "/add-feed",
         to_dashboard: true,
-        component: EditFeeds,
+        component: AddFeed,
     },
     {
         type: "collapse",

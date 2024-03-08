@@ -1,6 +1,5 @@
 import contextlib
 from typing import Any, AsyncIterator
-
 from app.config import settings
 from sqlalchemy.ext.asyncio import (
     AsyncConnection,
@@ -9,7 +8,7 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 from sqlalchemy.orm import declarative_base
-
+from pgvector.sqlalchemy import Vector
 Base = declarative_base()
 
 # Heavily inspired by https://praciano.com.br/fastapi-and-async-sqlalchemy-20-with-pytest-done-right.html
@@ -28,17 +27,25 @@ class DatabaseSessionManager:
         self._engine = None
         self._sessionmaker = None
 
-    @contextlib.asynccontextmanager
-    async def connect(self) -> AsyncIterator[AsyncConnection]:
-        if self._engine is None:
-            raise Exception("DatabaseSessionManager is not initialized")
+    from sqlalchemy import text
 
-        async with self._engine.begin() as connection:
-            try:
-                yield connection
-            except Exception:
-                await connection.rollback()
-                raise
+    class DatabaseSessionManager:
+        # ...
+
+        @contextlib.asynccontextmanager
+        async def connect(self) -> AsyncIterator[AsyncConnection]:
+            if self._engine is None:
+                raise Exception("DatabaseSessionManager is not initialized")
+
+            async with self._engine.begin() as connection:
+                try:
+                    # Execute the CREATE EXTENSION command
+                    await connection.execute(text('CREATE EXTENSION IF NOT EXISTS vector'))
+                    yield connection
+                except Exception:
+                    await connection.rollback()
+                    raise
+        # ...
 
     @contextlib.asynccontextmanager
     async def session(self) -> AsyncIterator[AsyncSession]:

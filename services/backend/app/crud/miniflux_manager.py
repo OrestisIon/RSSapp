@@ -8,9 +8,6 @@ from typing import Dict
 import miniflux
 from app.config import settings
 
-load_dotenv()
-API_KEY = settings.MINIFLUX_API_KEY
-URL = settings.MINIFLUX_URL
 
 async def get_icon_by_feed_id(client: miniflux.Client, feed_id: int) -> List[Icon]:
     try:
@@ -41,11 +38,10 @@ async def get_feed(client: miniflux.Client, feed_id: int) -> Feed:
 # Description: Creates a new feed.
 # Arguments: feed_url (feed URL), category_id (optional category ID).
 # Returns: Feed ID.
-async def create_feed(client: miniflux.Client, url: str, category_id: int = None) -> Feed:
+async def create_feed(client: miniflux.Client, url: str, category_id: int = None, **kwargs) -> Feed:
     try:
-        feed_data = client.create_feed(url, category_id)
+        feed_data = client.create_feed(url, category_id, **kwargs)
         # add the feed to the database
-        
         return feed_data
     except Exception as e:
         print(f"Error creating feed. Reason: {e}")
@@ -106,13 +102,7 @@ async def get_category_feeds(client: miniflux.Client, category_id: int) -> List[
         print(f"Error fetching category feeds. Reason: {e}")
         return []
     
-async def discover_feed(client: miniflux.Client, url: str) -> List[DiscoveredFeed]:
-    try:
-        discovered_feed = client.discover(url)
-        return discovered_feed
-    except Exception as e:
-        print(f"Error discovering feed. Reason: {e}")
-        return []
+
     
 async def create_category(client: miniflux.Client, title: str) -> Category:
     try:

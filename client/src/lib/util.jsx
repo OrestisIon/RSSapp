@@ -1,88 +1,216 @@
 import React from 'react'
 import dayjs from 'dayjs'
+import axios from 'axios'
+// export function signUpCall(username, email, password, errorHandler) {
+//     const server = import.meta.env.VITE_REACT_APP_MINIFLUX_API_URL
+//     const url = server + '/api/users'
+//     // post request to create a new user
+//     const data = {
+//         username: username,
+//         email: email,
+//         first_name: '',
+//         last_name: '',
+//         hashed_password: password,
+//         is_superuser: false,
+//     }
+//     const options = {
+//         method: 'POST',
+//         mode: 'no-cors',  // add this line
+//         headers: {
+//             'Content-Type': 'application/json',
+//         },
+//         body: JSON.stringify(data),
+//     }
+
+//     const err = (s) => errorHandler(s + ' (' + url + ')')
+
+//     return fetch(url, options)
+//         .then((response) => response.json())
+//         .then((data) => {
+//             console.log('Success:', data)
+//             return data
+//         })
+//         .catch((e) => {
+//             if (e instanceof TypeError) {
+//                 err(e.message)
+//             } else if (e instanceof Response) {
+//                 const contentType = e.headers.get('content-type')
+//                 if (
+//                     contentType &&
+//                     contentType.indexOf('application/json') !== -1
+//                 ) {
+//                     e.json().then((msg) => err(msg['error_message']))
+//                 } else {
+//                     e.text().then((msg) => err(msg))
+//                 }
+//             } else {
+//                 err(String(e))
+//             }
+//             return Promise.reject()
+//         })
+// }
 
 export function signUpCall(username, email, password, errorHandler) {
-    const token = import.meta.env.VITE_REACT_APP_MINIFLUX_API_KEY
-    const server = import.meta.env.VITE_REACT_APP_MINIFLUX_API_URL
-    const url = server + '/v1/users'
-    // post request to create a new user
+    const server = import.meta.env.VITE_REACT_APP_MINIFLUX_API_URL;
+    const url = `${server}/api/users`;
+    // Data to be sent in the POST request
     const data = {
         username: username,
-        password: password,
-        is_admin: false,
-    }
-    const options = { headers: { 'X-Auth-Token': token } }
-    options['method'] = 'POST'
-    options['body'] = JSON.stringify(data)
-    const err = (s) => errorHandler(s + ' (' + url + ')')
+        email: email,
+        first_name: '',
+        last_name: '',
+        hashed_password: password,
+        is_superuser: false,
+    };
 
-    return fetch(url, options)
-        .then((response) => response.json())
-        .then((data) => {
-            console.log('Success:', data)
-            return data
+
+    const err = (s) => errorHandler(s + ' (' + url + ')');
+
+    // Making the POST request using Axios
+    axios({method: 'post', url: url, data: data})
+        .then((response) => {
+            console.log('Success:', response.data);
+            return response.data;
         })
-        .catch((e) => {
-            if (e instanceof TypeError) {
-                err(e.message)
-            } else if (e instanceof Response) {
-                const contentType = e.headers.get('content-type')
-                if (
-                    contentType &&
-                    contentType.indexOf('application/json') !== -1
-                ) {
-                    e.json().then((msg) => err(msg['error_message']))
+        .catch((error) => {
+            if (error.response) {
+                // The request was made and the server responded with a status code
+                // that falls out of the range of 2xx
+                const contentType = error.response.headers['content-type'];
+                if (contentType && contentType.includes('application/json')) {
+                    err(error.response.data['error_message']);
                 } else {
-                    e.text().then((msg) => err(msg))
+                    err(error.response.data);
                 }
+            } else if (error.request) {
+                // The request was made but no response was received
+                err('The request was made but no response was received');
             } else {
-                err(String(e))
+                // Something happened in setting up the request that triggered an Error
+                err('Error', error.message);
             }
-            return Promise.reject()
-        })
+            return Promise.reject();
+        });
+}
+export function postRequest(endpoint, data, errorHandler) {
+    const token = localStorage.getItem('jwt-token');
+    if (!token) {
+        errorHandler('Unauthorized access. Please log in.');
+        return Promise.reject();
+    }
+
+    const server = import.meta.env.VITE_REACT_APP_MINIFLUX_API_URL;
+    const url = `${server}/api/users/${endpoint}`;
+
+    const err = (message) => errorHandler(`${message} (${url})`);
+
+    return axios({
+        method: 'post',
+        url: url,
+        data: data,
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+        }
+    })
+        .then(response => response.data)
+        .catch(error => {
+            if (error.response) {
+                const contentType = error.response.headers['content-type'];
+                if (contentType && contentType.includes('application/json')) {
+                    err(error.response.data['error_message']);
+                } else {
+                    err(error.response.data);
+                }
+            } else if (error.request) {
+                err('The request was made but no response was received');
+            } else {
+                err('Error', error.message);
+            }
+            return Promise.reject();
+        });
+    // Authorization': 'Bearer ' + token
 }
 
-
 export function apiCall(s, errorHandler, body = null) {
-    const token = import.meta.env.VITE_REACT_APP_MINIFLUX_API_KEY
-    const params = { headers: { 'X-Auth-Token': token } }
-    if (body) {
-        params['method'] = 'PUT'
-        params['body'] = JSON.stringify(body)
+    const token = localStorage.getItem('jwt-token');
+    if (!token) {
+        errorHandler('Unauthorized access. Please log in.');
+        return Promise.reject();
     }
-    const server = import.meta.env.VITE_REACT_APP_MINIFLUX_API_URL
-    const url = server + '/v1/' + s
-    const err = (s) => errorHandler(s + ' (' + url + ')')
 
-    return fetch(url, params)
-        .then((r) => {
-            if (!r.ok) {
-                throw r
+    const server = import.meta.env.VITE_REACT_APP_MINIFLUX_API_URL;
+    const url = `${server}/api/users/${s}`;
+    const headers = {
+        'Authorization': `Bearer ${token}`,
+    };
+
+    // Set up the Axios request configuration
+    const config = {
+        method: body ? 'PUT' : 'GET', // Choose method based on body parameter
+        url: url,
+        headers: headers,
+        data: body ? JSON.stringify(body) : null, // Include body if present
+    };
+
+    // Handle errors uniformly
+    const err = (message) => errorHandler(`${message} (${url})`);
+
+    // Perform the request
+    return axios(config)
+        .then(response => {
+            // Check for 204 No Content explicitly, if necessary
+            if (response.status === 204) {
+                return response;
             }
-            if (r.status === 204) {
-                return r
-            }
-            return r.json()
+            return response.data; // Directly return the response data
         })
-
-        .catch((e) => {
-            if (e instanceof TypeError) {
-                err(e.message)
-            } else if (e instanceof Response) {
-                const contentType = e.headers.get('content-type')
-                if (
-                    contentType &&
-                    contentType.indexOf('application/json') !== -1
-                ) {
-                    e.json().then((msg) => err(msg['error_message']))
+        .catch(error => {
+            if (error.response) {
+                // The request was made and the server responded with a status code
+                // that falls out of the range of 2xx
+                const contentType = error.response.headers['content-type'];
+                if (contentType && contentType.includes('application/json')) {
+                    err(error.response.data['error_message']);
                 } else {
-                    e.text().then((msg) => err(msg))
+                    err(error.response.data);
                 }
+            } else if (error.request) {
+                // The request was made but no response was received
+                err('The request was made but no response was received');
             } else {
-                err(String(e))
+                // Something happened in setting up the request that triggered an Error
+                err(error.message);
             }
-            return Promise.reject()
+            return Promise.reject();
+        });
+}
+export function getRequestWithAuth(endpoint, params, errorHandler) {
+    const server = import.meta.env.VITE_REACT_APP_MINIFLUX_API_URL;
+    const url = `${server}${endpoint}`;
+    const token = localStorage.getItem('jwt-token');
+
+    if (!token) {
+        console.error('Unauthorized access. Please log in.');
+        errorHandler('Unauthorized access. Please log in.');
+        return Promise.reject('Unauthorized access. Please log in.');
+    }
+
+    axios({
+        method: 'get',
+        url: url,
+        headers: {
+            'Authorization': `Bearer ${token}`,
+        },
+        params: params
+    })
+        .then(response => {
+            console.log('Success:', response.data);
+            return response.data;
         })
+        .catch(error => {
+            console.log(error.message);
+        });
 }
 
 export function relaTimestamp(t) {

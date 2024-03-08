@@ -6,7 +6,7 @@ import uvicorn
 from app.api.routers.users import router as users_router
 from app.config import settings
 from app.database import sessionmanager
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI, Depends, HTTPException, status, BackgroundTasks
 from typing import Annotated
 from fastapi.security import  OAuth2PasswordRequestForm
 from datetime import datetime, timedelta, timezone
@@ -14,6 +14,10 @@ from app.schemas.auth import Token
 from app.utils.auth import create_access_token, authenticate_user
 # logging.basicConfig(stream=sys.stdout, level=logging.DEBUG if settings.debug_logs else logging.INFO)
 import miniflux
+# Add the Celery worker import
+import uuid
+from fastapi.middleware.cors import CORSMiddleware
+
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
@@ -32,25 +36,39 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan, title=settings.project_name, docs_url="/api/docs")
 
+origins = [
+    "http://localhost:3000", 
+    # also allow the backend to itself
+    "http://backend:8000",
+    "http://localhost:8000",
+    # The origin of your frontend application
+    # You can add more origins here as needed
+]
 
+# Add CORSMiddleware to the application
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,  # Allows specified origins
+    allow_credentials=True,  # Allows cookies to be included in requests
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
+)     
+        
 @app.get("/")
-async def root():
-    return {"message": "Hello World"}
+def index() :
+    """Basic HTML response."""
+    body = (
+        "<html>"
+        "<body style='padding: 10px;'>"
+        "<h1>Welcome to the API</h1>"
+    "<div>"
+        "Check the docs: <a href='/docs'>here</a>"
+        "</div>"
+        "</body>"
+        "</html>"
+    )
 
-@app.get("/mini")
-def root():
-    try:
-        client = miniflux.Client("http://miniflux:8080", api_key="xEzgfo_f3_E8kCwW3cPMdX6HIEV59AXIN8xeF8BB83U=")
-    except Exception as e:
-        raise HTTPException("Error:" + e)
-    try:
-        feeds = client.me()
-    except Exception as e:
-        print(e)
-        return
-    return (client)
-
-@app.post("/token")
+@app.post("/api/token")
 async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     db_session: DBSessionDep,
@@ -67,6 +85,8 @@ async def login_for_access_token(
         data={"sub": user.email}, expires_delta=access_token_expires
     )
     return Token(access_token=access_token, token_type="bearer")
+
+
 
 # Routers
 app.include_router(users_router)

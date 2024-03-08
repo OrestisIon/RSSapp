@@ -4,8 +4,8 @@ from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from passlib.context import CryptContext
-
-
+import miniflux
+from app.schemas.user import FeedBase
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 async def get_user(db_session: AsyncSession, user_id: int):
@@ -14,6 +14,12 @@ async def get_user(db_session: AsyncSession, user_id: int):
         raise HTTPException(status_code=404, detail="User not found")
     return user
 
+async def add_feed(db_session: AsyncSession, feed: FeedBase):
+    db_feed = FeedDBModel(**feed.dict())
+    db_session.add(db_feed)
+    await db_session.commit()
+    await db_session.refresh(db_feed)
+    return db_feed
 
 async def get_user_by_email(db_session: AsyncSession, email: str):
     statement = select(UserDBModel).where(UserDBModel.email == email)
@@ -24,7 +30,8 @@ async def get_user_by_email(db_session: AsyncSession, email: str):
 
 async def create_user(
     db_session: AsyncSession, 
-    user: UserCreate
+    user: UserCreate,
+    client: miniflux.Client,
 ):
     userm = UserDBModel(
         username=user.username, 
@@ -35,16 +42,15 @@ async def create_user(
         is_superuser=user.is_superuser,
     )
     # Perform an action to validate the credentials, e.g., fetching the user's details
-    # user_info = client.me()
-    # feeds = client.get_feeds()
     # print(user_info)
     db_session.add(userm)
+    try:
+        user = client.create_user(username=user.email, password=user.hashed_password, is_admin=False)
+    except miniflux.ClientError as e:
+        await db_session.rollback()
+        raise HTTPException(status_code=400, detail=f"Error creating user in miniflux. Reason: {e}")
+    
     await db_session.commit()
-    # try:
-    #     user = client.create_user(username=user.email, password=user.hashed_password, is_admin=False)
-    # except miniflux.ClientError as e:
-    #     # await db_session.rollback()
-    #     raise HTTPException(status_code=400, detail=f"Error creating user in miniflux. Reason: {e}")
     # refresh the user to get the id
     await db_session.refresh(userm)
     return userm

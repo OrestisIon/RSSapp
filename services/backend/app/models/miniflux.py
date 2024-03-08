@@ -3,7 +3,11 @@ from typing import List, Optional
 from datetime import datetime
     
 # Create Class for Feeds
-
+class FeedRe(BaseModel):
+    title: str
+    rss_url: str
+    description: str
+    published: datetime
 class Category(BaseModel):
     id: int
     user_id: int

@@ -26,6 +26,7 @@ banned_feeds_lock = Lock()
 
 ALL_BANNED_FEEDS = []
 rss_urls = []
+
 def get_article_body(link):
     try:
         logging.info(f"Thread {link}: starting")

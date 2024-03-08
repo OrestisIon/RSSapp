@@ -7,7 +7,8 @@ from app.schemas.auth import TokenData
 from app.utils.auth import decode_jwt, oauth2_scheme
 from fastapi import Depends, HTTPException, status
 from jwt import PyJWTError
-
+import miniflux
+from app.config import settings
 
 async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db_session: DBSessionDep) -> models.User:
     credentials_exception = HTTPException(
@@ -19,6 +20,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db_ses
         payload = decode_jwt(token)
         email = payload.get("sub")
         if email is None:
+            print("Email not found")
             raise credentials_exception
         permissions = payload.get("permissions")
         if permissions is None:
@@ -28,11 +30,18 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db_ses
         raise credentials_exception
     user = await get_user_by_email(db_session, token_data.email)
     if user is None:
+        print("User not found")
         raise credentials_exception
     return user
 
 
+async def get_client(user: models.User = Depends(get_current_user)):
+    return miniflux.Client(settings.mini_url, user.email, user.password)
 
+def get_super():
+    return miniflux.Client(settings.mini_url, api_key=settings.mini_api_key)
 
-
+DefaultClient = Annotated[miniflux.Client, Depends(get_super)]
+CurrentClient = Annotated[miniflux.Client, Depends(get_client)]
 CurrentUserDep = Annotated[models.User, Depends(get_current_user)]
+

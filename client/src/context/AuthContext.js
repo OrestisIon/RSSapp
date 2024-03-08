@@ -1,6 +1,6 @@
 import  { createContext, useContext, useState, useEffect } from 'react';
 import PropTypes from 'prop-types'; 
-
+import axios from 'axios';
 const AuthContext = createContext();
 
 export function useAuth() {
@@ -17,64 +17,104 @@ export const AuthProvider = ({ children }) => {
             setUser(JSON.parse(storedUserData));
         }
     }, []);
-
     const login = async (userData) => {
-        // Implement login logic here and update the user state
-        //Extract the username and password from userData
+        // Extract the username and password from userData
         const { username, password } = userData;
-        console.log('Logging in' + username + ' ' + password);
-        const err = (s) => console.error(s)
-        if (!(username && password)) {
-            return new Promise((x, y) => {
-                return null
-            })
-        }
-        // Base64 encode the username and password
-        const base64Credentials = btoa(username + ':' + password);
-        const params = {
-            headers: {
-                'Authorization': 'Basic ' + base64Credentials,
-                'Content-Type': 'application/json' // Assuming JSON is expected
-            }
-        };
-        const server = import.meta.env.VITE_REACT_APP_MINIFLUX_API_URL
-        const url = server + '/v1/me' // This is the URL for the Miniflux API
-        return fetch(url, params)
-            .then((r) => {
-                if (!r.ok) {
-                    throw r
-                }
-                if (r.status === 204) {
-                    return r
-                }
-                localStorage.setItem('user', JSON.stringify(userData));
-                setUser(userData);
-                return r.json()
-            })
+        console.log('Logging in', username, password);
 
-            .catch((e) => {
-                if (e instanceof TypeError) {
-                    err(e.message)
-                } else if (e instanceof Response) {
-                    const contentType = e.headers.get('content-type')
-                    if (
-                        contentType &&
-                        contentType.indexOf('application/json') !== -1
-                    ) {
-                        e.json().then((msg) => err(msg['error_message']))
-                    } else {
-                        e.text().then((msg) => err(msg))
-                    }
-                } else {
-                    err(String(e))
-                }
-                return Promise.reject()
-            })
-        // Implement login logic here and update the user state
+        if (!username || !password) {
+            // If username or password is missing, resolve to null immediately
+            return Promise.resolve(null);
+        }
+
+        // Prepare the data for the request
+        const data = {
+            username: username,
+            password: password,
+        };
+
+        // Define the URL for the login request
+        const server = import.meta.env.VITE_REACT_APP_MINIFLUX_API_URL;
+        const url = `${server}/token`; // Adjust this to your actual login URL
+        try {
+            axios({ method: 'post', url: url, data: data })
+                .then((response) => {
+                    console.log('Login successful', response.data);
+                    localStorage.setItem('jwt-token', response.data.access_token);
+                    return response.data;
+                })
+                .catch((error) => {
+                    console.error('Login error:', error);
+                    // Handle error as needed
+                    return Promise.reject();
+                });
+        } catch (error) {
+            console.error('Login error:', error);
+            if (error.response) {
+                // The request was made and the server responded with a status code
+                // that falls out of the range of 2xx and the error response might have data
+                console.error('Error data:', error.response.data);
+                const errorMessage = error.response.data.error_message || 'An error occurred';
+                console.error(errorMessage);
+                // You can adjust the error handling as needed
+            } else if (error.request) {
+                // The request was made but no response was received
+                console.error('No response received from the server.');
+            } else {
+                // Something happened in setting up the request that triggered an Error
+                console.error('Error', error.message);
+            }
+            return Promise.reject();
+        }
     };
+
+
+    // const login = async (userData) => {
+    //     const { username, password } = userData;
+    //     console.log('Logging in', username, password);
+
+    //     if (!username || !password) {
+    //         return Promise.resolve(null);
+    //     }
+
+    //     // Prepare the data for x-www-form-urlencoded format
+    //     const data = qs.stringify({
+    //         grant_type: '', // adjust as necessary, left empty as per the curl example
+    //         username: username,
+    //         password: password,
+    //         scope: '', // adjust as necessary, left empty as per the curl example
+    //         client_id: '', // adjust as necessary, left empty as per the curl example
+    //         client_secret: '', // adjust as necessary, left empty as per the curl example
+    //     });
+
+    //     // Define the URL for the login request
+    //     const server = import.meta.env.VITE_REACT_APP_MINIFLUX_API_URL;
+    //     const url = `${server}/token`;
+
+    //     try {
+    //         const response = await axios({
+    //             method: 'post',
+    //             url: url,
+    //             data: data,
+    //             headers: {
+    //                 'Content-Type': 'application/x-www-form-urlencoded',
+    //             },
+    //         });
+
+    //         console.log('Login successful', response.data);
+    //         localStorage.setItem('jwt-token', response.data.access_token);
+    //         return response.data;
+    //     } catch (error) {
+    //         console.error('Login error:', error);
+    //         // Handle error as needed
+    //         return Promise.reject();
+    //     }
+    // };
+
 
     const logout = () => {
         // Clear user from local storage on logout
+        localStorage.removeItem('jwt-token');
         localStorage.removeItem('user');
         // Implement logout logic here
         setUser(null);
